@@ -1,28 +1,92 @@
+{{>partial_header}}
+package {{packageName}}
 
-# This is a sample api mustache template.  It is representing a ficticous 
-# language and won't be usable or compile to anything without lots of changes.
-# Use it as an example.  You can access the variables in the generator object
-# like such:
-
-# use the package from the `apiPackage` variable
-package: {{package}}
-
-# operations block
 {{#operations}}
-classname: {{classname}}
+import (
+	"encoding/json"
+	"fmt"
+    "github.com/twilio/twilio-go/client"
+    {{#imports}}
+    "{{import}}"
+    {{/imports}}
+)
 
-# loop over each operation in the API:
+type {{classname}}Service struct {
+    baseURL string
+    client  *twilio.Client
+}
+
+func New{{classname}}Service(client *twilio.Client) *{{classname}}Service {
+    c := new({{classname}}Service)
+    c.client = client
+    c.baseURL = fmt.Sprintf("https://studio.%s", c.client.BaseURL)
+
+    return c
+}
 {{#operation}}
-
-# each operation has an `operationId`:
-operationId: {{operationId}}
-
-# and parameters:
+{{#hasOptionalParams}}
+// {{{nickname}}}Params Optional parameters for the method '{{{nickname}}}'
+type {{{nickname}}}Params struct {
 {{#allParams}}
-{{paramName}}: {{dataType}}
+{{^required}}
+    {{vendorExtensions.x-export-param-name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#withXml}} xml:"{{baseName}}{{#isXmlAttribute}},attr{{/isXmlAttribute}}"{{/withXml}}{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
+{{/required}}
 {{/allParams}}
+}
+{{/hasOptionalParams}}
 
+/*
+{{operationId}}{{#summary}} {{{.}}}{{/summary}}{{^summary}} Method for {{operationId}}{{/summary}}
+{{#notes}}
+{{notes}}
+{{/notes}}
+{{#allParams}}
+{{#required}}
+ * @param {{paramName}}{{#description}} {{{.}}}{{/description}}
+{{/required}}
+{{/allParams}}
+{{#hasOptionalParams}}
+ * @param optional nil or *{{{nickname}}}Opts - Optional Parameters:
+{{#allParams}}
+{{^required}}
+ * @param "{{vendorExtensions.x-export-param-name}}" ({{#isNullable}}*{{/isNullable}}{{{dataType}}}) - {{#description}}{{{.}}}{{/description}}
+{{/required}}
+{{/allParams}}
+{{/hasOptionalParams}}
+{{#returnType}}
+@return {{{returnType}}}
+{{/returnType}}
+*/
+func (c *{{{classname}}}Service) {{{nickname}}}({{#allParams}}{{#required}}{{paramName}} {{{dataType}}}{{#hasMore}}, {{/hasMore}}{{/required}}{{/allParams}}{{#hasOptionalParams}}params *{{{nickname}}}Params{{/hasOptionalParams}}) ({{#returnType}}*{{{returnType}}}, {{/returnType}}error) {
+    path := "{{{path}}}"
+    {{#pathParams}}
+    path = strings.Replace(path, "{"+"{{baseName}}"+"}", {{paramName}}, -1)
+    {{/pathParams}}
+
+    resp, err := c.client.{{httpMethod}}(c.baseURL+path, {{#hasOptionalParams}}params{{/hasOptionalParams}}{{^hasOptionalParams}}nil{{/hasOptionalParams}})
+    {{#returnType}}
+    if err != nil {
+        return nil, err
+    }
+
+    defer resp.Body.Close()
+
+    ps := &{{{returnType}}}{}
+    if err := json.NewDecoder(resp.Body).Decode(ps); err != nil {
+        return nil, err
+    }
+
+    return ps, err
+    {{/returnType}}
+    {{^returnType}}
+    if err != nil {
+        return err
+    }
+
+    defer resp.Body.Close()
+
+    return nil
+    {{/returnType}}
+}
 {{/operation}}
-
-# end of operations block
 {{/operations}}
