@@ -26,6 +26,7 @@ public class TwilioGoGenerator extends GoClientCodegen {
         additionalProperties.put(CodegenConstants.IS_GO_SUBMODULE, true);
 
         supportingFiles.clear();
+        supportingFiles.add(new SupportingFile("api_service.mustache", "", "api_service.go"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("configuration.mustache", "", "configuration.go"));
         supportingFiles.add(new SupportingFile("response.mustache", "", "response.go"));

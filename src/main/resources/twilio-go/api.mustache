@@ -17,11 +17,10 @@ type {{classname}}Service struct {
 }
 
 func New{{classname}}Service(client *twilio.Client) *{{classname}}Service {
-    c := new({{classname}}Service)
-    c.client = client
-    c.baseURL = fmt.Sprintf("https://studio.%s", c.client.BaseURL)
-
-    return c
+    return &{{classname}}Service{
+        client: client,
+        baseURL: fmt.Sprintf("https://studio.%s", client.BaseURL),
+    }
 }
 {{#operation}}
 {{#hasOptionalParams}}

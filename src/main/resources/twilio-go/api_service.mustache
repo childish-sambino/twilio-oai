@@ -1,0 +1,18 @@
+{{>partial_header}}
+package {{packageName}}
+
+import (
+    twilio "github.com/twilio/twilio-go/client"
+)
+
+type ApiService struct {
+    {{#apiInfo}}{{#apis}}{{classname}} *{{classname}}Service
+    {{/apis}}{{/apiInfo}}
+}
+
+func NewApiService(client *twilio.Client) *ApiService {
+    return &ApiService{
+        {{#apiInfo}}{{#apis}}{{classname}}: New{{classname}}Service(client),
+        {{/apis}}{{/apiInfo}}
+    }
+}
