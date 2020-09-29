@@ -28,7 +28,6 @@ public class TwilioGoGenerator extends GoClientCodegen {
         supportingFiles.clear();
         supportingFiles.add(new SupportingFile("api_service.mustache", "", "api_service.go"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
-        supportingFiles.add(new SupportingFile("configuration.mustache", "", "configuration.go"));
         supportingFiles.add(new SupportingFile("response.mustache", "", "response.go"));
         supportingFiles.add(new SupportingFile("go.mod.mustache", "", "go.mod"));
         supportingFiles.add(new SupportingFile("go.sum", "", "go.sum"));
@@ -36,14 +35,15 @@ public class TwilioGoGenerator extends GoClientCodegen {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> postProcessOperationsWithModels(Map<String, Object> objs, List<Object> allModels) {
-        Map<String, Object> results = super.postProcessOperationsWithModels(objs, allModels);
+    public Map<String, Object> postProcessOperationsWithModels(final Map<String, Object> objs, final List<Object> allModels) {
+        final Map<String, Object> results = super.postProcessOperationsWithModels(objs, allModels);
 
-        Map<String, Object> ops = (Map<String, Object>) results.get("operations");
-        ArrayList<CodegenOperation> opList = (ArrayList<CodegenOperation>) ops.get("operation");
+        final Map<String, Object> ops = (Map<String, Object>) results.get("operations");
+        final ArrayList<CodegenOperation> opList = (ArrayList<CodegenOperation>) ops.get("operation");
 
         // iterate over the operation and perhaps modify something
-        for (CodegenOperation co : opList) {
+        for (final CodegenOperation co : opList) {
+            co.vendorExtensions.put("x-is-delete-operation", "DELETE".equalsIgnoreCase(co.httpMethod));
             System.out.println(co);
         }
 
@@ -51,13 +51,13 @@ public class TwilioGoGenerator extends GoClientCodegen {
     }
 
     @Override
-    public void postProcessParameter(CodegenParameter parameter) {
+    public void postProcessParameter(final CodegenParameter parameter) {
         // Make sure required non-path params get into the options block.
         parameter.required = parameter.isPathParam;
     }
 
     @Override
-    public Map<String, String> createMapping(String key, String value) {
+    public Map<String, String> createMapping(final String key, final String value) {
         // Optional dependency not needed.
         if (value.equals("github.com/antihax/optional")) {
             return new HashMap<>();
