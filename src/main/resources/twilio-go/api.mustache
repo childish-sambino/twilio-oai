@@ -27,7 +27,7 @@ func New{{classname}}Service(client *twilio.Client) *{{classname}}Service {
 // {{{nickname}}}Params Optional parameters for the method '{{{nickname}}}'
 type {{{nickname}}}Params struct {
 {{#optionalParams}}
-    {{vendorExtensions.x-export-param-name}} *{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#withXml}} xml:"{{baseName}}{{#isXmlAttribute}},attr{{/isXmlAttribute}}"{{/withXml}}{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
+    {{baseName}} *{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#withXml}} xml:"{{baseName}}{{#isXmlAttribute}},attr{{/isXmlAttribute}}"{{/withXml}}{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
 {{/optionalParams}}
 }
 {{/hasOptionalParams}}
@@ -45,7 +45,7 @@ type {{{nickname}}}Params struct {
 {{#hasOptionalParams}}
  * @param optional nil or *{{{nickname}}}Opts - Optional Parameters:
 {{#optionalParams}}
- * @param "{{vendorExtensions.x-export-param-name}}" ({{#isNullable}}*{{/isNullable}}{{{dataType}}}) - {{#description}}{{{.}}}{{/description}}
+ * @param "{{baseName}}" ({{#isNullable}}*{{/isNullable}}{{{dataType}}}) - {{#description}}{{{.}}}{{/description}}
 {{/optionalParams}}
 {{/hasOptionalParams}}
 {{#returnType}}
@@ -64,8 +64,8 @@ func (c *{{{classname}}}Service) {{{nickname}}}({{#allParams}}{{#required}}{{par
     {{#hasOptionalParams}}
     {{#optionalParams}}
     {{^isHeaderParam}}
-    if params.{{vendorExtensions.x-export-param-name}} != nil {
-        data["{{baseName}}"] = *params.{{vendorExtensions.x-export-param-name}}
+    if params != nil && params.{{baseName}} != nil {
+        data["{{baseName}}"] = *params.{{baseName}}
     }
     {{/isHeaderParam}}
     {{/optionalParams}}
@@ -73,8 +73,8 @@ func (c *{{{classname}}}Service) {{{nickname}}}({{#allParams}}{{#required}}{{par
 
     {{#hasHeaderParams}}
     {{#headerParams}}
-    if params.{{vendorExtensions.x-export-param-name}} != nil {
-        headers["{{baseName}}"] = *params.{{vendorExtensions.x-export-param-name}}
+    if params != nil && params.{{baseName}} != nil {
+        headers["{{baseName}}"] = *params.{{baseName}}
     }
     {{/headerParams}}
     {{/hasHeaderParams}}

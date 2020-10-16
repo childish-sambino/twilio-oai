@@ -1,0 +1,97 @@
+{{>partial_header}}
+package {{packageName}}
+
+import (
+    "fmt"
+
+    "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+    "github.com/twilio/terraform-provider-twilio/util"
+    types "github.com/twilio/twilio-go/studio/v2"
+    {{#imports}}
+    "{{import}}"
+    {{/imports}}
+)
+
+{{#resources}}
+func resource{{name}}() *schema.Resource { //nolint:golint,funlen
+    return &schema.Resource{
+        Create: resource{{name}}Create,
+        Read:   resource{{name}}Read,
+        Update: resource{{name}}Update,
+        Delete: resource{{name}}Delete,
+        Schema: map[string]*schema.Schema{
+            {{#schema}}
+            "{{vendorExtensions.x-name-in-snake-case}}": {
+                Type:     schema.TypeString,
+                {{#required}}
+                Required: true,
+                {{/required}}
+                {{^required}}
+                Optional: true,
+                {{/required}}
+            },
+            {{/schema}}
+        },
+    }
+}
+
+{{#operations}}
+{{#operation}}
+func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
+    {{#hasOptionalParams}}
+    params := resource{{name}}Params(d)
+    {{/hasOptionalParams}}
+
+    {{#vendorExtensions.x-is-create-operation}}
+    r, err := m.(*Config).Client.StudioV2.{{nickname}}(params)
+    {{/vendorExtensions.x-is-create-operation}}
+
+    {{^vendorExtensions.x-is-create-operation}}
+    r, err := m.(*Config).Client.StudioV2.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    {{/vendorExtensions.x-is-create-operation}}
+
+    if err != nil {
+        return fmt.Errorf("error with {{nickname}}: %s", err)
+    }
+
+    {{#vendorExtensions.x-is-create-operation}}
+    d.SetId(*r.Sid)
+    return resourceStudioFlowRead(d, m)
+    {{/vendorExtensions.x-is-create-operation}}
+
+    {{#vendorExtensions.x-is-read-operation}}
+    {{#schema}}
+    d.Set("{{vendorExtensions.x-name-in-snake-case}}", r.{{baseName}})
+    {{/schema}}
+
+    return nil
+    {{/vendorExtensions.x-is-read-operation}}
+
+    {{#vendorExtensions.x-is-update-operation}}
+    return resourceStudioFlowRead(d, m)
+    {{/vendorExtensions.x-is-update-operation}}
+
+    {{#vendorExtensions.x-is-delete-operation}}
+    return nil
+    {{/vendorExtensions.x-is-delete-operation}}
+}
+
+{{/operation}}
+{{/operations}}
+
+func resource{{name}}Params(d *schema.ResourceData) *types.StudioFlowParams {
+    params := &types.StudioFlowParams{
+        {{#schema}}{{#required}}
+        {{baseName}}: types.String(d.Get("{{vendorExtensions.x-name-in-snake-case}}").(string)),
+        {{/required}}{{/schema}}
+    }
+
+    {{#schema}}{{^required}}
+    if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
+        params.{{baseName}} = util.String(v.(string))
+    }
+    {{/required}}{{/schema}}
+
+    return params
+}
+{{/resources}}

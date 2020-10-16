@@ -16,7 +16,7 @@ public class TwilioGoGenerator extends GoClientCodegen {
     public TwilioGoGenerator() {
         super();
 
-        embeddedTemplateDir = templateDir = "twilio-go";
+        embeddedTemplateDir = templateDir = getName();
     }
 
     @Override
@@ -26,11 +26,10 @@ public class TwilioGoGenerator extends GoClientCodegen {
         additionalProperties.put(CodegenConstants.IS_GO_SUBMODULE, true);
 
         supportingFiles.clear();
-        supportingFiles.add(new SupportingFile("api_service.mustache", "", "api_service.go"));
-        supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
-        supportingFiles.add(new SupportingFile("response.mustache", "", "response.go"));
-        supportingFiles.add(new SupportingFile("go.mod.mustache", "", "go.mod"));
-        supportingFiles.add(new SupportingFile("go.sum", "", "go.sum"));
+        supportingFiles.add(new SupportingFile("README.mustache", "README.md"));
+        supportingFiles.add(new SupportingFile("response.mustache", "response.go"));
+        supportingFiles.add(new SupportingFile("go.mod.mustache", "go.mod"));
+        supportingFiles.add(new SupportingFile("go.sum", "go.sum"));
     }
 
     @SuppressWarnings("unchecked")
