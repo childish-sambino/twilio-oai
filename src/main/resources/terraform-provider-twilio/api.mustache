@@ -5,8 +5,8 @@ import (
     "fmt"
 
     "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-    "github.com/twilio/terraform-provider-twilio/util"
-    types "github.com/twilio/twilio-go/studio/v2"
+    "github.com/twilio/terraform-provider-twilio/twilio"
+    types "github.com/twilio/twilio-go/{{clientPath}}"
 )
 
 {{#resources}}
@@ -40,10 +40,10 @@ func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
 
     {{/hasOptionalParams}}
     {{#vendorExtensions.x-is-create-operation}}
-    r, err := m.(*Config).Client.StudioV2.{{nickname}}(params)
+    r, err := m.(*Config).Client.{{productVersion}}.{{nickname}}(params)
     {{/vendorExtensions.x-is-create-operation}}
     {{^vendorExtensions.x-is-create-operation}}
-    r, err := m.(*Config).Client.StudioV2.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    r, err := m.(*Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
     {{/vendorExtensions.x-is-create-operation}}
 
     if err != nil {
@@ -82,7 +82,7 @@ func resource{{name}}Params(d *schema.ResourceData) *types.{{name}}CreateParams 
 
     {{#schema}}{{^required}}
     if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
-        params.{{baseName}} = util.String(v.(string))
+        params.{{baseName}} = v.(*{{dataType}})
     }
     {{/required}}{{/schema}}
 

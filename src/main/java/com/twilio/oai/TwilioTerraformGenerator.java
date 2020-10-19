@@ -3,6 +3,7 @@ package com.twilio.oai;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
 import org.openapitools.codegen.languages.GoClientCodegen;
+import org.openapitools.codegen.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class TwilioTerraformGenerator extends GoClientCodegen {
         final Map<String, Object> ops = (Map<String, Object>) results.get("operations");
         final ArrayList<CodegenOperation> opList = (ArrayList<CodegenOperation>) ops.get("operation");
 
+        // Drop list operations since they're not needed in CRUD operations.
         opList.removeIf(co -> "list".equals(co.vendorExtensions.get("x-path-type")));
 
         // iterate over the operation and perhaps modify something
@@ -39,9 +41,10 @@ public class TwilioTerraformGenerator extends GoClientCodegen {
             this.addNameInSnakeCase(co.allParams);
             this.addNameInSnakeCase(co.optionalParams);
 
+            // Group operations by resource.
             final String resourceName = co.path
-                .replaceFirst("\\/[^/]+", "") // Drop the version
-                .replaceAll("\\/\\{.+?\\}", "") // Drop every path parameter
+                .replaceFirst("/[^/]+", "") // Drop the version
+                .replaceAll("/\\{.+?}", "") // Drop every path parameter
                 .replace(".json", "") // Drop the JSON extension
                 .replace("/", ""); // Drop the path separators
 
@@ -52,11 +55,21 @@ public class TwilioTerraformGenerator extends GoClientCodegen {
             resource.put("name", resourceName);
             resourceOperationList.add(co);
 
+            // Use the parameters for creating the resource as the resource schema.
             if (co.nickname.endsWith("Create")) {
                 resource.put("schema", co.allParams);
             }
         }
 
+        final String inputSpecPattern = ".+?_(.+?)_(.+?)\\.(.+)";
+
+        final String productVersion = StringUtils.camelize(getInputSpec()
+            .replaceAll(inputSpecPattern, "$1_$2"));
+        final String clientPath = getInputSpec()
+            .replaceAll(inputSpecPattern, "$1/$2");
+
+        results.put("productVersion", productVersion);
+        results.put("clientPath", clientPath);
         results.put("resources", resources.values());
 
         return results;
