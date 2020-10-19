@@ -7,13 +7,10 @@ import (
     "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
     "github.com/twilio/terraform-provider-twilio/util"
     types "github.com/twilio/twilio-go/studio/v2"
-    {{#imports}}
-    "{{import}}"
-    {{/imports}}
 )
 
 {{#resources}}
-func resource{{name}}() *schema.Resource { //nolint:golint,funlen
+func resource{{name}}() *schema.Resource {
     return &schema.Resource{
         Create: resource{{name}}Create,
         Read:   resource{{name}}Read,
@@ -40,12 +37,11 @@ func resource{{name}}() *schema.Resource { //nolint:golint,funlen
 func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
     {{#hasOptionalParams}}
     params := resource{{name}}Params(d)
-    {{/hasOptionalParams}}
 
+    {{/hasOptionalParams}}
     {{#vendorExtensions.x-is-create-operation}}
     r, err := m.(*Config).Client.StudioV2.{{nickname}}(params)
     {{/vendorExtensions.x-is-create-operation}}
-
     {{^vendorExtensions.x-is-create-operation}}
     r, err := m.(*Config).Client.StudioV2.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
     {{/vendorExtensions.x-is-create-operation}}
@@ -56,9 +52,9 @@ func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
 
     {{#vendorExtensions.x-is-create-operation}}
     d.SetId(*r.Sid)
-    return resourceStudioFlowRead(d, m)
-    {{/vendorExtensions.x-is-create-operation}}
 
+    return resource{{name}}Read(d, m)
+    {{/vendorExtensions.x-is-create-operation}}
     {{#vendorExtensions.x-is-read-operation}}
     {{#schema}}
     d.Set("{{vendorExtensions.x-name-in-snake-case}}", r.{{baseName}})
@@ -66,11 +62,9 @@ func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
 
     return nil
     {{/vendorExtensions.x-is-read-operation}}
-
     {{#vendorExtensions.x-is-update-operation}}
-    return resourceStudioFlowRead(d, m)
+    return resource{{name}}Read(d, m)
     {{/vendorExtensions.x-is-update-operation}}
-
     {{#vendorExtensions.x-is-delete-operation}}
     return nil
     {{/vendorExtensions.x-is-delete-operation}}
@@ -79,11 +73,11 @@ func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
 {{/operation}}
 {{/operations}}
 
-func resource{{name}}Params(d *schema.ResourceData) *types.StudioFlowParams {
-    params := &types.StudioFlowParams{
-        {{#schema}}{{#required}}
-        {{baseName}}: types.String(d.Get("{{vendorExtensions.x-name-in-snake-case}}").(string)),
-        {{/required}}{{/schema}}
+func resource{{name}}Params(d *schema.ResourceData) *types.{{name}}CreateParams {
+    params := &types.{{name}}CreateParams{
+        {{#schema}}
+        {{#required}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/required}}
+        {{/schema}}
     }
 
     {{#schema}}{{^required}}

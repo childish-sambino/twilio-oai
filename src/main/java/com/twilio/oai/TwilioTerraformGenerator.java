@@ -1,6 +1,5 @@
 package com.twilio.oai;
 
-import org.openapitools.codegen.CodegenConstants;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
 import org.openapitools.codegen.languages.GoClientCodegen;
@@ -16,15 +15,6 @@ public class TwilioTerraformGenerator extends GoClientCodegen {
         super();
 
         embeddedTemplateDir = templateDir = getName();
-    }
-
-    @Override
-    public void processOpts() {
-        super.processOpts();
-
-        additionalProperties.put(CodegenConstants.IS_GO_SUBMODULE, true);
-
-        supportingFiles.clear();
     }
 
     @SuppressWarnings("unchecked")
