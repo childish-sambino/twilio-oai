@@ -36,8 +36,14 @@ func resource{{name}}() *schema.Resource {
 {{#operation}}
 func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
     {{#hasOptionalParams}}
-    params := resource{{name}}Params(d)
-
+    params := &types.{{nickname}}Params{
+        {{#allParams}}{{#required}}{{^isPathParam}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/isPathParam}}{{/required}}{{/allParams}}
+    }
+    {{#allParams}}{{^required}}
+    if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
+        params.{{baseName}} = v.(*{{dataType}})
+    }
+    {{/required}}{{/allParams}}
     {{/hasOptionalParams}}
     {{#vendorExtensions.x-is-create-operation}}
     r, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(params)
@@ -78,20 +84,4 @@ func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interfa
 
 {{/operation}}
 {{/operations}}
-
-func resource{{name}}Params(d *schema.ResourceData) *types.{{name}}CreateParams {
-    params := &types.{{name}}CreateParams{
-        {{#schema}}
-        {{#required}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/required}}
-        {{/schema}}
-    }
-
-    {{#schema}}{{^required}}
-    if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
-        params.{{baseName}} = v.(*{{dataType}})
-    }
-    {{/required}}{{/schema}}
-
-    return params
-}
 {{/resources}}
