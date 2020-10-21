@@ -2,8 +2,8 @@
 package {{packageName}}
 
 import (
-    "fmt"
-
+    "context"
+    "github.com/hashicorp/terraform-plugin-sdk/diag"
     "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
     "github.com/twilio/terraform-provider-twilio/twilio"
     types "github.com/twilio/twilio-go/{{clientPath}}"
@@ -12,10 +12,10 @@ import (
 {{#resources}}
 func resource{{name}}() *schema.Resource {
     return &schema.Resource{
-        Create: resource{{name}}Create,
-        Read:   resource{{name}}Read,
-        Update: resource{{name}}Update,
-        Delete: resource{{name}}Delete,
+        CreateContext: resource{{name}}Create,
+        ReadContext:   resource{{name}}Read,
+        UpdateContext: resource{{name}}Update,
+        DeleteContext: resource{{name}}Delete,
         Schema: map[string]*schema.Schema{
             {{#schema}}
             "{{vendorExtensions.x-name-in-snake-case}}": {
@@ -34,26 +34,32 @@ func resource{{name}}() *schema.Resource {
 
 {{#operations}}
 {{#operation}}
-func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
+func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
     {{#hasOptionalParams}}
     params := resource{{name}}Params(d)
 
     {{/hasOptionalParams}}
     {{#vendorExtensions.x-is-create-operation}}
-    r, err := m.(*Config).Client.{{productVersion}}.{{nickname}}(params)
+    r, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(params)
     {{/vendorExtensions.x-is-create-operation}}
-    {{^vendorExtensions.x-is-create-operation}}
-    r, err := m.(*Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
-    {{/vendorExtensions.x-is-create-operation}}
+    {{#vendorExtensions.x-is-delete-operation}}
+    err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id())
+    {{/vendorExtensions.x-is-delete-operation}}
+    {{#vendorExtensions.x-is-read-operation}}
+    r, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    {{/vendorExtensions.x-is-read-operation}}
+    {{#vendorExtensions.x-is-update-operation}}
+    _, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    {{/vendorExtensions.x-is-update-operation}}
 
     if err != nil {
-        return fmt.Errorf("error with {{nickname}}: %s", err)
+        return diag.FromErr(err)
     }
 
     {{#vendorExtensions.x-is-create-operation}}
-    d.SetId(*r.Sid)
+    d.SetId(r.Sid)
 
-    return resource{{name}}Read(d, m)
+    return resource{{name}}Read(ctx, d, m)
     {{/vendorExtensions.x-is-create-operation}}
     {{#vendorExtensions.x-is-read-operation}}
     {{#schema}}
@@ -63,7 +69,7 @@ func resource{{nickname}}(d *schema.ResourceData, m interface{}) error {
     return nil
     {{/vendorExtensions.x-is-read-operation}}
     {{#vendorExtensions.x-is-update-operation}}
-    return resource{{name}}Read(d, m)
+    return resource{{name}}Read(ctx, d, m)
     {{/vendorExtensions.x-is-update-operation}}
     {{#vendorExtensions.x-is-delete-operation}}
     return nil
