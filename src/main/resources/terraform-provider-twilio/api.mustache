@@ -6,6 +6,7 @@ import (
     "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
     "github.com/twilio/terraform-provider-twilio/client"
+    "github.com/twilio/terraform-provider-twilio/util"
     types "github.com/twilio/twilio-go/{{clientPath}}"
 )
 
@@ -38,12 +39,12 @@ func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interfa
     {{#hasOptionalParams}}
     params := &types.{{nickname}}Params{
         {{#allParams}}
-        {{#required}}{{^isPathParam}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/isPathParam}}{{/required}}
+        {{#required}}{{^isPathParam}}{{baseName}}: util.String(d.Get("{{vendorExtensions.x-name-in-snake-case}}").({{dataType}})),{{/isPathParam}}{{/required}}
         {{/allParams}}
     }
     {{#allParams}}{{^required}}
     if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
-        params.{{baseName}} = v.(*{{dataType}})
+        params.{{baseName}} = util.String(v.({{dataType}}))
     }
     {{/required}}{{/allParams}}
     {{/hasOptionalParams}}

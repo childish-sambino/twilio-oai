@@ -1,35 +1,21 @@
 package com.twilio.oai;
 
-import org.openapitools.codegen.CodegenConstants;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
 import org.openapitools.codegen.SupportingFile;
-import org.openapitools.codegen.languages.GoClientCodegen;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TwilioGoGenerator extends GoClientCodegen {
-
-    public TwilioGoGenerator() {
-        super();
-
-        embeddedTemplateDir = templateDir = getName();
-    }
+public class TwilioGoGenerator extends AbstractTwilioGoGenerator {
 
     @Override
     public void processOpts() {
         super.processOpts();
 
-        additionalProperties.put(CodegenConstants.IS_GO_SUBMODULE, true);
-
-        supportingFiles.clear();
         supportingFiles.add(new SupportingFile("README.mustache", "README.md"));
         supportingFiles.add(new SupportingFile("response.mustache", "response.go"));
-        supportingFiles.add(new SupportingFile("go.mod.mustache", "go.mod"));
-        supportingFiles.add(new SupportingFile("go.sum", "go.sum"));
     }
 
     @SuppressWarnings("unchecked")
@@ -53,16 +39,6 @@ public class TwilioGoGenerator extends GoClientCodegen {
     public void postProcessParameter(final CodegenParameter parameter) {
         // Make sure required non-path params get into the options block.
         parameter.required = parameter.isPathParam;
-    }
-
-    @Override
-    public Map<String, String> createMapping(final String key, final String value) {
-        // Optional dependency not needed.
-        if (value.equals("github.com/antihax/optional")) {
-            return new HashMap<>();
-        }
-
-        return super.createMapping(key, value);
     }
 
     /**

@@ -2,7 +2,6 @@ package com.twilio.oai;
 
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenParameter;
-import org.openapitools.codegen.languages.GoClientCodegen;
 import org.openapitools.codegen.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -10,13 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TwilioTerraformGenerator extends GoClientCodegen {
-
-    public TwilioTerraformGenerator() {
-        super();
-
-        embeddedTemplateDir = templateDir = getName();
-    }
+public class TwilioTerraformGenerator extends AbstractTwilioGoGenerator {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -81,16 +74,6 @@ public class TwilioTerraformGenerator extends GoClientCodegen {
 
     private String toSnakeCase(final String string) {
         return string.replaceAll("([a-z\\d])([A-Z])", "$1_$2").toLowerCase();
-    }
-
-    @Override
-    public Map<String, String> createMapping(final String key, final String value) {
-        // Optional dependency not needed.
-        if (value.equals("github.com/antihax/optional")) {
-            return new HashMap<>();
-        }
-
-        return super.createMapping(key, value);
     }
 
     /**
