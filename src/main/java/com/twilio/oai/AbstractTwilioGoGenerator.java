@@ -12,8 +12,6 @@ public abstract class AbstractTwilioGoGenerator extends GoClientCodegen {
         super();
 
         embeddedTemplateDir = templateDir = getName();
-
-        typeMapping.put("object", "string");
     }
 
     @Override

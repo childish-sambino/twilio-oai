@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
     twilio "github.com/twilio/twilio-go/client"
+    "net/url"
     {{#imports}}
     "{{import}}"
     {{/imports}}
@@ -58,14 +59,25 @@ func (c *{{{classname}}}Service) {{{nickname}}}({{#allParams}}{{#required}}{{par
     path = strings.Replace(path, "{"+"{{baseName}}"+"}", {{paramName}}, -1)
     {{/pathParams}}
 
-    data := {{#hasOptionalParams}}make(map[string]interface{}){{/hasOptionalParams}}{{^hasOptionalParams}}0{{/hasOptionalParams}}
+    data := {{#hasOptionalParams}}url.Values{}{{/hasOptionalParams}}{{^hasOptionalParams}}0{{/hasOptionalParams}}
     headers := {{#hasHeaderParams}}make(map[string]interface{}){{/hasHeaderParams}}{{^hasHeaderParams}}0{{/hasHeaderParams}}
 
     {{#hasOptionalParams}}
     {{#optionalParams}}
     {{^isHeaderParam}}
     if params != nil && params.{{baseName}} != nil {
-        data["{{baseName}}"] = *params.{{baseName}}
+        {{#isFreeFormObject}}
+        v, err := json.Marshal(params.{{baseName}})
+
+        if err != nil {
+            return nil, err
+        }
+
+        data.Set("{{baseName}}", string(v))
+        {{/isFreeFormObject}}
+        {{^isFreeFormObject}}
+        data.Set("{{baseName}}", {{^isString}}string({{/isString}}*params.{{baseName}}{{^isString}}){{/isString}})
+        {{/isFreeFormObject}}
     }
     {{/isHeaderParam}}
     {{/optionalParams}}
