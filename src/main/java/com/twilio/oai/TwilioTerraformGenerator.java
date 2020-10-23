@@ -11,6 +11,12 @@ import java.util.Map;
 
 public class TwilioTerraformGenerator extends AbstractTwilioGoGenerator {
 
+    public TwilioTerraformGenerator() {
+        super();
+
+        typeMapping.put("object", "string");
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> postProcessOperationsWithModels(final Map<String, Object> objs, final List<Object> allModels) {
@@ -31,8 +37,8 @@ public class TwilioTerraformGenerator extends AbstractTwilioGoGenerator {
             co.vendorExtensions.put("x-is-update-operation", co.nickname.endsWith("Update"));
             co.vendorExtensions.put("x-is-delete-operation", co.nickname.endsWith("Delete"));
 
-            this.addNameInSnakeCase(co.allParams);
-            this.addNameInSnakeCase(co.optionalParams);
+            this.addParamVendorExtensions(co.allParams);
+            this.addParamVendorExtensions(co.optionalParams);
 
             // Group operations by resource.
             final String resourceName = co.path
@@ -68,8 +74,9 @@ public class TwilioTerraformGenerator extends AbstractTwilioGoGenerator {
         return results;
     }
 
-    private void addNameInSnakeCase(final List<CodegenParameter> params) {
+    private void addParamVendorExtensions(final List<CodegenParameter> params) {
         params.forEach(p -> p.vendorExtensions.put("x-name-in-snake-case", this.toSnakeCase(p.baseName)));
+        params.forEach(p -> p.vendorExtensions.put("x-util-name", p.isFreeFormObject ? "Object" : "String"));
     }
 
     private String toSnakeCase(final String string) {

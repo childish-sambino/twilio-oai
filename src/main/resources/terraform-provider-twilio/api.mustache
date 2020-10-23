@@ -39,12 +39,12 @@ func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interfa
     {{#hasOptionalParams}}
     params := &types.{{nickname}}Params{
         {{#allParams}}
-        {{#required}}{{^isPathParam}}{{baseName}}: util.String(d.Get("{{vendorExtensions.x-name-in-snake-case}}").({{dataType}})),{{/isPathParam}}{{/required}}
+        {{#required}}{{^isPathParam}}{{baseName}}: util.{{vendorExtensions.x-util-name}}(d.Get("{{vendorExtensions.x-name-in-snake-case}}").({{dataType}})),{{/isPathParam}}{{/required}}
         {{/allParams}}
     }
     {{#allParams}}{{^required}}
     if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
-        params.{{baseName}} = util.String(v.({{dataType}}))
+        params.{{baseName}} = util.{{vendorExtensions.x-util-name}}(v.({{dataType}}))
     }
     {{/required}}{{/allParams}}
     {{/hasOptionalParams}}
