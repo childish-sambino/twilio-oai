@@ -1,16 +1,16 @@
 {{>partial_header}}
-package {{packageName}}
+package v2
 
 import (
     "context"
-    "github.com/hashicorp/terraform-plugin-sdk/diag"
-    "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-    "github.com/twilio/terraform-provider-twilio/twilio"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+    "github.com/twilio/terraform-provider-twilio/client"
     types "github.com/twilio/twilio-go/{{clientPath}}"
 )
 
 {{#resources}}
-func resource{{name}}() *schema.Resource {
+func Resource{{name}}() *schema.Resource {
     return &schema.Resource{
         CreateContext: resource{{name}}Create,
         ReadContext:   resource{{name}}Read,
@@ -37,7 +37,9 @@ func resource{{name}}() *schema.Resource {
 func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
     {{#hasOptionalParams}}
     params := &types.{{nickname}}Params{
-        {{#allParams}}{{#required}}{{^isPathParam}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/isPathParam}}{{/required}}{{/allParams}}
+        {{#allParams}}
+        {{#required}}{{^isPathParam}}{{baseName}}: d.Get("{{vendorExtensions.x-name-in-snake-case}}").(*{{dataType}}),{{/isPathParam}}{{/required}}
+        {{/allParams}}
     }
     {{#allParams}}{{^required}}
     if v, ok := d.GetOk("{{vendorExtensions.x-name-in-snake-case}}"); ok {
@@ -46,16 +48,16 @@ func resource{{nickname}}(ctx context.Context, d *schema.ResourceData, m interfa
     {{/required}}{{/allParams}}
     {{/hasOptionalParams}}
     {{#vendorExtensions.x-is-create-operation}}
-    r, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(params)
+    r, err := m.(*client.Config).Client.{{productVersion}}.{{nickname}}(params)
     {{/vendorExtensions.x-is-create-operation}}
     {{#vendorExtensions.x-is-delete-operation}}
-    err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id())
+    err := m.(*client.Config).Client.{{productVersion}}.{{nickname}}(d.Id())
     {{/vendorExtensions.x-is-delete-operation}}
     {{#vendorExtensions.x-is-read-operation}}
-    r, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    r, err := m.(*client.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
     {{/vendorExtensions.x-is-read-operation}}
     {{#vendorExtensions.x-is-update-operation}}
-    _, err := m.(*twilio.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
+    _, err := m.(*client.Config).Client.{{productVersion}}.{{nickname}}(d.Id(){{#hasOptionalParams}}, params{{/hasOptionalParams}})
     {{/vendorExtensions.x-is-update-operation}}
 
     if err != nil {
