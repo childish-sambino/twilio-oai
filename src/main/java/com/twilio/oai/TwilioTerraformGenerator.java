@@ -28,7 +28,7 @@ public class TwilioTerraformGenerator extends AbstractTwilioGoGenerator {
         final ArrayList<CodegenOperation> opList = (ArrayList<CodegenOperation>) ops.get("operation");
 
         // Drop list operations since they're not needed in CRUD operations.
-        opList.removeIf(co -> "list".equals(co.vendorExtensions.get("x-path-type")));
+        opList.removeIf(co -> co.nickname.endsWith("List"));
 
         // iterate over the operation and perhaps modify something
         for (final CodegenOperation co : opList) {
